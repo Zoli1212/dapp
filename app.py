@@ -1,56 +1,33 @@
-from flask import Flask, request
-from db import shops, products
-import uuid
+# __init__.py
 
-app = Flask(__name__)
+from flask import Flask, config, redirect
+from flask.json import jsonify
+import os
+from src.compute import sim
+from src.findfit import fit
 
-# DB for now
-
-
-@app.route("/shop")
-def get_shops():
-    return shops
-
-@app.route("/shop", methods=['POST'])
-def create_shop():
-    shop_data = request.json
-    shop_id = uuid.uuid4().hex
-    print(shop_id)
-    shop = {**shop_data, "id": shop_id}
-    print(shop)
-    shops[shop_id]= shop
-    return shop, 201
-
-# <shop_name> - Path parameter
-@app.route("/product", methods=['POST'])
-def create_product(shop_name):
-    new_product = request.json
-    if new_product['shop_id'] not in shops:
-        return {'message': 'Shop not found'}, 404
-    product_id = uuid.uuid4().hex 
-    product = {**new_product, "id": product_id}
-    products[product_id] = product
-
-    return product
+from src.constants.http_status_codes import HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 
 
-@app.route("/shops/<shop_id>")
-def get_shop_by_name(shop_id):
-    try:
-        return shops[shop_id]
-    except KeyError:
-        return {'message': 'Shop not found'}, 404
-@app.route("/product/<shop_id>")
-def get_shop_by_id(shop_id):
-    try:
-        return shops[shop_id]
-    except KeyError:
-        return {'message': 'Shop not found'}, 404
-    
-@app.route("/product")
-def get_products():
-        return {'products': list(products.values())}
- 
+
+
+def create_app(test_config=None):
+
+    app = Flask(__name__)
+
+    app.register_blueprint(sim)
+    app.register_blueprint(fit)
+
+
+  
     
 
-app.run()
+    @app.errorhandler(HTTP_404_NOT_FOUND)
+    def handle_404(e):
+        return jsonify({'error': 'Not found'}), HTTP_404_NOT_FOUND
+
+    @app.errorhandler(HTTP_500_INTERNAL_SERVER_ERROR)
+    def handle_500(e):
+        return jsonify({'error': 'Something went wrong, we are working on it'}), HTTP_500_INTERNAL_SERVER_ERROR
+
+    return app
