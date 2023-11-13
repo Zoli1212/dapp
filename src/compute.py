@@ -5,6 +5,9 @@ import uuid
 import os
 from skimage.metrics import structural_similarity
 from skimage.transform import resize
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+import numpy as np
 import cv2
 from src.constants.http_status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -127,7 +130,27 @@ def similarity():
             ssim = structural_sim(img1_no_faces, img2_no_faces)
             print("Similarity using SSIM between id1 and id2 (without faces) is:", ssim)
             confidence = normalize_score(orb_similarity*10, ssim*10)
-            result = {'classification': f'{type}','country': f'{country}', 'confidence': confidence}, HTTP_200_OK
+            
+
+            print(id3_path)
+            img4 = cv2.imread(os.path.join(id3_path))
+
+            resized = tf.image.resize(img4, (256,256))
+            new_model = load_model(os.path.join('models','imageclassifier.h5'))
+            new_model.save('saved_model/java_comp_model')
+                                            
+            pr = new_model.predict(np.expand_dims(resized/255, 0))
+            pr = 1.0 - pr
+            if pr.size == 1:
+                pr_value = pr.item()  # Convert to Python scalar if pr is a single value
+            else:
+                pr_value = pr.tolist()
+            print(pr)
+            if pr_value > 0.75: 
+                print(f'Predicted is a doc class')
+            else:
+                print(f'Predicted is false class')
+            result = {'classification': f'{type}','country': f'{country}', 'confidence': pr_value}, HTTP_200_OK
             
             return jsonify(result)
         
