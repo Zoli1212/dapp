@@ -131,8 +131,6 @@ def similarity():
             print("Similarity using SSIM between id1 and id2 (without faces) is:", ssim)
             confidence = normalize_score(orb_similarity*10, ssim*10)
             
-
-            print(id3_path)
             img4 = cv2.imread(os.path.join(id3_path))
 
             resized = tf.image.resize(img4, (256,256))
@@ -145,11 +143,11 @@ def similarity():
                 pr_value = pr.item()  # Convert to Python scalar if pr is a single value
             else:
                 pr_value = pr.tolist()
-            print(pr)
-            if pr_value > 0.75: 
-                print(f'Predicted is a doc class')
-            else:
-                print(f'Predicted is false class')
+            # if pr_value > 0.75: 
+            #     print(f'Predicted is a doc class')
+            # else:
+            #     print(f'Predicted is false class')
+            pr_value = pr_value if pr_value > 50.0 else confidence
             result = {'classification': f'{type}','country': f'{country}', 'confidence': pr_value}, HTTP_200_OK
             
             return jsonify(result)
