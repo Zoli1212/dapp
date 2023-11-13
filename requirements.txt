@@ -58,9 +58,9 @@ six==1.16.0
 SQLAlchemy==2.0.22
 tensorboard==2.14.1
 tensorboard-data-server==0.7.2
-tensorflow==2.14.0
-tensorflow-estimator==2.14.0
-tensorflow-intel==2.14.0
+tensorflow
+tensorflow-estimator
+tensorflow-intel
 tensorflow-io-gcs-filesystem==0.31.0
 termcolor==2.3.0
 tifffile==2023.9.26
